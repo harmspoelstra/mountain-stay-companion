@@ -119,84 +119,63 @@ export default function MountainStayCompanion() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-800">
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <header className="mb-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
-          <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-emerald-700">
-            Guest Journey Companion
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Mountain Stay Companion
-          </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-stone-600">
+    <div className="page">
+      <div className="container">
+        <header className="hero">
+          <div className="eyebrow">Guest Journey Companion</div>
+          <h1>Mountain Stay Companion</h1>
+          <p className="lead">
             Everything your guests need before, during and after their stay —
             all in one calm and simple place.
           </p>
         </header>
 
-        <section className="mb-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <form
-            onSubmit={handleSubmit}
-            className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-stone-200"
-          >
-            <h2 className="text-xl font-semibold">Start here</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-600">
+        <section className="grid">
+          <form onSubmit={handleSubmit} className="card">
+            <h2>Start here</h2>
+            <p className="muted">
               Fill in the details below to generate a personal stay plan for your
               guest.
             </p>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-stone-700">
-                  Guest name
-                </span>
+            <div className="form-grid">
+              <div className="input-wrap">
+                <label>Guest name</label>
                 <input
                   type="text"
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
                   placeholder="Susanne"
-                  className="w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 outline-none transition focus:border-emerald-600 focus:bg-white"
                 />
-              </label>
+              </div>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-stone-700">
-                  Arrival date
-                </span>
+              <div className="input-wrap">
+                <label>Arrival date</label>
                 <input
                   type="date"
                   value={arrivalDate}
                   onChange={(e) => setArrivalDate(e.target.value)}
-                  className="w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 outline-none transition focus:border-emerald-600 focus:bg-white"
                   required
                 />
-              </label>
+              </div>
             </div>
 
-            <label className="mt-4 block">
-              <span className="mb-2 block text-sm font-medium text-stone-700">
-                Chalet or destination
-              </span>
+            <div className="input-wrap">
+              <label>Chalet or destination</label>
               <input
                 type="text"
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="Chalet des Montagnes"
-                className="w-full rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3 outline-none transition focus:border-emerald-600 focus:bg-white"
               />
-            </label>
+            </div>
 
-            <button
-              type="submit"
-              className="mt-6 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
-            >
-              View my stay plan
-            </button>
+            <button type="submit">View my stay plan</button>
           </form>
 
-          <div className="rounded-3xl bg-emerald-900 p-6 text-white shadow-sm">
-            <h2 className="text-xl font-semibold">Why guests will like this</h2>
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-emerald-50">
+          <div className="card-dark">
+            <h2>Why guests will like this</h2>
+            <ul>
               <li>One clear overview instead of multiple emails</li>
               <li>Less stress before arrival</li>
               <li>Easy to read on mobile</li>
@@ -206,11 +185,9 @@ export default function MountainStayCompanion() {
         </section>
 
         {showPlan && (
-          <section className="mb-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
-            <h2 className="text-2xl font-semibold text-emerald-800">
-              {guestName ? `Welcome, ${guestName}` : "Welcome"}
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-stone-600">
+          <section className="card" style={{ marginBottom: 24 }}>
+            <h2>{guestName ? `Welcome, ${guestName}` : "Welcome"}</h2>
+            <p className="muted">
               {formattedArrivalDate ? (
                 <>
                   Your arrival is planned for <strong>{formattedArrivalDate}</strong>
@@ -220,12 +197,13 @@ export default function MountainStayCompanion() {
                 "Your personal stay plan is ready."
               )}
             </p>
-            <div className="mt-4 flex flex-wrap gap-3 text-sm">
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-800 ring-1 ring-emerald-100">
+
+            <div className="badges">
+              <span className="badge">
                 Checklist completed: {completedCount}/{checklist.length}
               </span>
               {destination ? (
-                <span className="rounded-full bg-stone-100 px-3 py-1 text-stone-700 ring-1 ring-stone-200">
+                <span className="badge badge-neutral">
                   Destination: {destination}
                 </span>
               ) : null}
@@ -233,36 +211,27 @@ export default function MountainStayCompanion() {
           </section>
         )}
 
-        <section className="mb-8">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Stay timeline</h2>
-            <span className="rounded-full bg-white px-3 py-1 text-sm text-stone-600 shadow-sm ring-1 ring-stone-200">
+        <section>
+          <div className="section-head">
+            <h2>Stay timeline</h2>
+            <div className="badge badge-neutral">
               {showPlan ? "Personal plan" : "Example content"}
-            </span>
+            </div>
           </div>
 
-          <div className="grid gap-4">
+          <div className="timeline">
             {timeline.map((block) => (
-              <div
-                key={block.title}
-                className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-stone-200"
-              >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <h3 className="text-lg font-semibold text-emerald-800">
-                    {block.title}
-                  </h3>
+              <div key={block.title} className="timeline-card">
+                <div className="timeline-top">
+                  <h3>{block.title}</h3>
                   {showPlan && block.displayDate ? (
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm text-emerald-800 ring-1 ring-emerald-100">
-                      {block.displayDate}
-                    </span>
+                    <div className="timeline-date">{block.displayDate}</div>
                   ) : null}
                 </div>
-                <ul className="mt-3 space-y-2 text-sm leading-6 text-stone-700">
+
+                <ul>
                   {block.items.map((item) => (
-                    <li key={item} className="flex gap-3">
-                      <span className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-700" />
-                      <span>{item}</span>
-                    </li>
+                    <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
@@ -271,33 +240,27 @@ export default function MountainStayCompanion() {
         </section>
 
         <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Quick checklist</h2>
-            <span className="text-sm text-stone-500">
+          <div className="section-head">
+            <h2>Quick checklist</h2>
+            <div className="progress">
               {completedCount} of {checklist.length} completed
-            </span>
-          </div>
-          <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
-            <div className="grid gap-3">
-              {checklist.map((item) => (
-                <label
-                  key={item}
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
-                    checkedItems[item]
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-                      : "border-stone-200 text-stone-700"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={!!checkedItems[item]}
-                    onChange={() => toggleChecklistItem(item)}
-                    className="h-4 w-4"
-                  />
-                  <span>{item}</span>
-                </label>
-              ))}
             </div>
+          </div>
+
+          <div className="checklist-card">
+            {checklist.map((item) => (
+              <label
+                key={item}
+                className={`check-item ${checkedItems[item] ? "done" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!checkedItems[item]}
+                  onChange={() => toggleChecklistItem(item)}
+                />
+                <span>{item}</span>
+              </label>
+            ))}
           </div>
         </section>
       </div>
