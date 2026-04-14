@@ -78,68 +78,10 @@ export default function MountainStayCompanion() {
     "I packed everything I need",
   ];
 
-  const formattedArrivalDate = useMemo(() => {
-    if (!arrivalDate) return "";
-    const date = new Date(arrivalDate);
-    return new Intl.DateTimeFormat("en-GB", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(date);
-  }, [arrivalDate]);
-
-  const timeline = useMemo(() => {
-    if (!arrivalDate) return timelineTemplate;
-
-    return timelineTemplate.map((block) => ({
-      ...block,
-      displayDate: formatDateWithOffset(arrivalDate, block.offsetDays),
-      eventDate: getDateWithOffset(arrivalDate, block.offsetDays),
-    }));
-  }, [arrivalDate]);
-
-  const todaysFocus = useMemo(() => {
-    if (!arrivalDate || !showPlan) return null;
-
-    const today = startOfDay(new Date());
-    const datedBlocks = timeline
-      .filter((block) => block.eventDate)
-      .sort((a, b) => a.eventDate - b.eventDate);
-
-    let current = datedBlocks[0];
-    let next = null;
-
-    for (let i = 0; i < datedBlocks.length; i += 1) {
-      const block = datedBlocks[i];
-      if (today >= block.eventDate) {
-        current = block;
-        next = datedBlocks[i + 1] || null;
-      } else {
-        next = block;
-        break;
-      }
-    }
-
-    if (today < datedBlocks[0].eventDate) {
-      current = datedBlocks[0];
-      next = datedBlocks[1] || null;
-    }
-
-    return {
-      current,
-      next,
-      daysUntilCurrent: differenceInDays(today, current.eventDate),
-      daysUntilNext: next ? differenceInDays(today, next.eventDate) : null,
-    };
-  }, [arrivalDate, showPlan, timeline]);
-
-  const completedCount = Object.values(checkedItems).filter(Boolean).length;
-
   function startOfDay(date) {
-    const clone = new Date(date);
-    clone.setHours(0, 0, 0, 0);
-    return clone;
+    const copy = new Date(date);
+    copy.setHours(0, 0, 0, 0);
+    return copy;
   }
 
   function getDateWithOffset(baseDate, offsetDays) {
@@ -149,11 +91,20 @@ export default function MountainStayCompanion() {
     return date;
   }
 
-  function formatDateWithOffset(baseDate, offsetDays) {
-    const date = getDateWithOffset(baseDate, offsetDays);
+  function formatDate(date) {
     return new Intl.DateTimeFormat("en-GB", {
       day: "numeric",
       month: "short",
+      year: "numeric",
+    }).format(date);
+  }
+
+  function formatLongDate(dateString) {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
       year: "numeric",
     }).format(date);
   }
@@ -171,6 +122,60 @@ export default function MountainStayCompanion() {
     return `${Math.abs(days)} days ago`;
   }
 
+  const timeline = useMemo(() => {
+    if (!arrivalDate) return timelineTemplate;
+
+    return timelineTemplate.map((block) => {
+      const eventDate = getDateWithOffset(arrivalDate, block.offsetDays);
+      return {
+        ...block,
+        eventDate,
+        displayDate: formatDate(eventDate),
+      };
+    });
+  }, [arrivalDate]);
+
+  const formattedArrivalDate = useMemo(() => {
+    if (!arrivalDate) return "";
+    return formatLongDate(arrivalDate);
+  }, [arrivalDate]);
+
+  const todaysFocus = useMemo(() => {
+    if (!showPlan || !arrivalDate) return null;
+
+    const today = startOfDay(new Date());
+    const datedBlocks = timeline
+      .filter((block) => block.eventDate)
+      .sort((a, b) => a.eventDate - b.eventDate);
+
+    if (datedBlocks.length === 0) return null;
+
+    let current = datedBlocks[0];
+    let next = datedBlocks[1] || null;
+
+    if (today < datedBlocks[0].eventDate) {
+      current = datedBlocks[0];
+      next = datedBlocks[1] || null;
+    } else {
+      for (let i = 0; i < datedBlocks.length; i += 1) {
+        const block = datedBlocks[i];
+        if (today >= block.eventDate) {
+          current = block;
+          next = datedBlocks[i + 1] || null;
+        }
+      }
+    }
+
+    return {
+      current,
+      next,
+      daysUntilCurrent: differenceInDays(today, current.eventDate),
+      daysUntilNext: next ? differenceInDays(today, next.eventDate) : null,
+    };
+  }, [showPlan, arrivalDate, timeline]);
+
+  const completedCount = Object.values(checkedItems).filter(Boolean).length;
+
   function handleSubmit(event) {
     event.preventDefault();
     setShowPlan(true);
@@ -183,7 +188,6 @@ export default function MountainStayCompanion() {
     }));
   }
 
- 
   function formatICSDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -203,11 +207,61 @@ export default function MountainStayCompanion() {
 
   function escapeICS(text) {
     return String(text)
-      .replace(/\/g, "\\")
-      .replace(/;/g, "\;")
-      .replace(/,/g, "\,")
-      .replace(/
-/g, "\n");
+      .replace(/\\/g, "\\\\")
+      .replace(/;/g, "\\;")
+      .replace(/,/g, "\\,")
+      .replace(/\n/g, "\\n");
+  }
+
+  function downloadCalendar() {
+    if (!arrivalDate) return;
+
+    const events = timeline.map((block, index) => {
+      const eventDate = block.eventDate || getDateWithOffset(arrivalDate, block.offsetDays);
+      const nextDate = new Date(eventDate);
+      nextDate.setDate(nextDate.getDate() + 1);
+
+      const summaryDestination = destination ? ` - ${destination}` : "";
+      const description = [block.focus, ...block.items.map((item) => `- ${item}`)].join("\\n");
+
+      return [
+        "BEGIN:VEVENT",
+        `UID:mountain-stay-${block.key}-${index}@companion.app`,
+        `DTSTAMP:${formatICSDateTime(new Date())}`,
+        `DTSTART;VALUE=DATE:${formatICSDate(eventDate)}`,
+        `DTEND;VALUE=DATE:${formatICSDate(nextDate)}`,
+        `SUMMARY:${escapeICS(`Mountain Stay: ${block.title}${summaryDestination}`)}`,
+        `DESCRIPTION:${escapeICS(description)}`,
+        "BEGIN:VALARM",
+        "TRIGGER:-PT9H",
+        "ACTION:DISPLAY",
+        `DESCRIPTION:${escapeICS(block.title)}`,
+        "END:VALARM",
+        "END:VEVENT",
+      ].join("\n");
+    });
+
+    const calendar = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Mountain Stay Companion//EN",
+      "CALSCALE:GREGORIAN",
+      ...events,
+      "END:VCALENDAR",
+    ].join("\n");
+
+    const blob = new Blob([calendar], {
+      type: "text/calendar;charset=utf-8",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "mountain-stay-reminders.ics";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -226,8 +280,7 @@ export default function MountainStayCompanion() {
           <form onSubmit={handleSubmit} className="card">
             <h2>Start here</h2>
             <p className="muted">
-              Fill in the details below to generate a personal stay plan for your
-              guest.
+              Fill in the details below to generate a personal stay plan for your guest.
             </p>
 
             <div className="form-grid">
@@ -265,7 +318,11 @@ export default function MountainStayCompanion() {
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <button type="submit">View my stay plan</button>
               {showPlan && arrivalDate ? (
-                <button type="button" onClick={downloadCalendar} className="secondary-button">
+                <button
+                  type="button"
+                  onClick={downloadCalendar}
+                  className="secondary-button"
+                >
                   Add reminders to calendar
                 </button>
               ) : null}
@@ -287,13 +344,17 @@ export default function MountainStayCompanion() {
           <section className="focus-card">
             <div className="section-head">
               <div>
-                <div className="eyebrow" style={{ marginBottom: 8 }}>Today’s focus</div>
+                <div className="eyebrow" style={{ marginBottom: 8 }}>
+                  Today’s focus
+                </div>
                 <h2 style={{ marginBottom: 8 }}>{todaysFocus.current.title}</h2>
                 <p className="muted" style={{ marginBottom: 0 }}>
                   {todaysFocus.current.focus}
                 </p>
               </div>
-              <div className="badge">{getRelativeLabel(todaysFocus.daysUntilCurrent)}</div>
+              <div className="badge">
+                {getRelativeLabel(todaysFocus.daysUntilCurrent)}
+              </div>
             </div>
 
             <ul>
@@ -304,24 +365,25 @@ export default function MountainStayCompanion() {
 
             {todaysFocus.next ? (
               <div className="next-step-box">
-                <strong>Next step:</strong> {todaysFocus.next.title} — {getRelativeLabel(todaysFocus.daysUntilNext)}
+                <strong>Next step:</strong> {todaysFocus.next.title} —{" "}
+                {getRelativeLabel(todaysFocus.daysUntilNext)}
               </div>
             ) : null}
           </section>
         ) : null}
 
-        {showPlan && (
+        {showPlan ? (
           <section className="card" style={{ marginBottom: 24 }}>
             <h2>{guestName ? `Welcome, ${guestName}` : "Welcome"}</h2>
             <p className="muted">
-              {formattedArrivalDate ? (
+              Your arrival is planned for <strong>{formattedArrivalDate}</strong>
+              {destination ? (
                 <>
-                  Your arrival is planned for <strong>{formattedArrivalDate}</strong>
-                  {destination ? <> at <strong>{destination}</strong></> : null}.
+                  {" "}
+                  at <strong>{destination}</strong>
                 </>
-              ) : (
-                "Your personal stay plan is ready."
-              )}
+              ) : null}
+              .
             </p>
 
             <div className="badges">
@@ -335,7 +397,7 @@ export default function MountainStayCompanion() {
               ) : null}
             </div>
           </section>
-        )}
+        ) : null}
 
         <section>
           <div className="section-head">
@@ -347,7 +409,7 @@ export default function MountainStayCompanion() {
 
           <div className="timeline">
             {timeline.map((block) => (
-              <div key={block.title} className="timeline-card">
+              <div key={block.key} className="timeline-card">
                 <div className="timeline-top">
                   <h3>{block.title}</h3>
                   {showPlan && block.displayDate ? (
