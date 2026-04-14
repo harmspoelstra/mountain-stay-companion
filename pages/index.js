@@ -183,55 +183,8 @@ export default function MountainStayCompanion() {
     }));
   }
 
-  function downloadCalendar() {
-    if (!arrivalDate) return;
-
-    const events = timeline.map((block, index) => {
-      const eventDate = block.eventDate || getDateWithOffset(arrivalDate, block.offsetDays);
-      const nextDate = new Date(eventDate);
-      nextDate.setDate(nextDate.getDate() + 1);
-      const summaryDestination = destination ? ` - ${destination}` : "";
-      const description = [block.focus, ...block.items.map((item) => `- ${item}`)].join("\n");
-
-      return [
-        "BEGIN:VEVENT",
-        `UID:mountain-stay-${block.key}-${index}@companion.app`,
-        `DTSTAMP:${formatICSDateTime(new Date())}`,
-        `DTSTART;VALUE=DATE:${formatICSDate(eventDate)}`,
-        `DTEND;VALUE=DATE:${formatICSDate(nextDate)}`,
-        `SUMMARY:${escapeICS(`Mountain Stay: ${block.title}${summaryDestination}`)}`,
-        `DESCRIPTION:${escapeICS(description)}`,
-        "BEGIN:VALARM",
-        "TRIGGER:-PT9H",
-        "ACTION:DISPLAY",
-        `DESCRIPTION:${escapeICS(block.title)}`,
-        "END:VALARM",
-        "END:VEVENT",
-      ].join("
-");
-    });
-
-    const calendar = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//Mountain Stay Companion//EN",
-      "CALSCALE:GREGORIAN",
-      ...events,
-      "END:VCALENDAR",
-    ].join("
-");
-
-    const blob = new Blob([calendar], { type: "text/calendar;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "mountain-stay-reminders.ics";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }
-
+ 
+Command "npm run build" exited with 1
   function formatICSDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
