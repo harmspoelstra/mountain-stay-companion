@@ -54,7 +54,8 @@ export default function MountainStayCompanion() {
         "Review ski access or shuttle info",
         "Use support contact details when needed",
       ],
-      focus: "Your stay has started. Here is the practical information for this phase.",
+      focus:
+        "Your stay has started. Here is the practical information for this phase.",
     },
     {
       key: "departure",
@@ -217,7 +218,8 @@ export default function MountainStayCompanion() {
     if (!arrivalDate) return;
 
     const events = timeline.map((block, index) => {
-      const eventDate = block.eventDate || getDateWithOffset(arrivalDate, block.offsetDays);
+      const eventDate =
+        block.eventDate || getDateWithOffset(arrivalDate, block.offsetDays);
       const nextDate = new Date(eventDate);
       nextDate.setDate(nextDate.getDate() + 1);
 
