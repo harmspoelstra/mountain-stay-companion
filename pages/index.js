@@ -184,7 +184,6 @@ export default function MountainStayCompanion() {
   }
 
  
-Command "npm run build" exited with 1
   function formatICSDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
