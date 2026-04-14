@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-export default function MountainStayCompanion() {
+export default function Home() {
   const [guestName, setGuestName] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
   const [destination, setDestination] = useState("");
@@ -145,7 +145,8 @@ export default function MountainStayCompanion() {
           <form onSubmit={handleSubmit} className="card">
             <h2>Start here</h2>
             <p className="muted">
-              Fill in the details below to generate a personal stay plan for your guest.
+              Fill in the details below to generate a personal stay plan for your
+              guest.
             </p>
 
             <div className="form-grid">
